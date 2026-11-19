@@ -8,8 +8,9 @@ try {
     if ($LASTEXITCODE) { throw 'GitHub repository access failed.' }
     $oldVersion = ([IO.File]::ReadAllText((Join-Path $PSScriptRoot 'VERSION.txt'))).Trim()
     if ([version]$Version -lt [version]$oldVersion) { throw 'Cannot publish an older version.' }
-    & gh release view "v$Version" -R trick86155-ship-it/gpt-quiz 2>$null | Out-Null
-    if ($LASTEXITCODE -eq 0) { throw 'This release already exists. Choose a new version.' }
+    $existing = & gh release list -R trick86155-ship-it/gpt-quiz --json tagName --limit 100 | ConvertFrom-Json
+    if ($LASTEXITCODE) { throw 'Release history lookup failed.' }
+    if (@($existing | Where-Object tagName -eq "v$Version").Count) { throw 'This release already exists. Choose a new version.' }
     [IO.File]::WriteAllText((Join-Path $PSScriptRoot 'VERSION.txt'), $Version + [Environment]::NewLine)
     & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'Verify.ps1')
     if ($LASTEXITCODE) { throw 'Verification failed.' }
