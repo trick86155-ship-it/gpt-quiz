@@ -1,4 +1,3 @@
-LunaQuiz.exe
-LunaQuiz.exe.sha256
-*.download
-*.tmp
+*
+!.gitignore
+!DOWNLOAD.md
